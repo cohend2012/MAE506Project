@@ -32,6 +32,7 @@ R = eye(1)*0.1;
 syms s KP1 KD1 KP2 KD2
 K_Vec = [KP1 KD1 KP2 KD2]
 full_system = (s*eye(size(A))-A-B*K_Vec)
+C = [1 1 1 1];
 full_system_com = [1 1 1 1]*((s*eye(size(A))-A)^-1)*B
 simplify(full_system_com)
 det(full_system)
@@ -72,6 +73,16 @@ CCCF = [981 981 -300 -300]
  
  
  KccF = [67.3728+0 119.243+(981/1000) 90.6527+(5886/1000) 17.6000-(200/1000) ]
+ 
+ syms s
+ U = det(s*eye(length(A))-A);
+ 
+ PCCF_INV = [-(981)/1000 (-2943/500) 1/5 1;... 
+             (-2943/500) 1/5 1 0;...
+             1/5 1 0 0;...
+             1 0 0 0];
+ 
+
  
 %%
 det(ctrb(A,B)) % Can we control it 
@@ -132,12 +143,14 @@ score = (mse'*mse);
 
 
 figure(1)
+
 % Recomend to dock this system to watch it 
  for k=1:100:length(t)
-     drawcartpend_bw(y(k,:),m,M,L);
      
+     drawcartpend_bw(y(k,:),m,M,L);
+  
  end
-
+ 
  
 % TO DO: 
 % MAKE A VIDEO FOR THE PPTX WE NEED
@@ -219,8 +232,13 @@ CCCF = [981 981 -300 -300]
  
  KccF = [67.3728+0 119.243+(981/1000) 90.6527+(5886/1000) 17.6000-(200/1000) ]
  
+ 
+ K = KccF*(ctrb(A,B)*PCCF_INV)^-1
+ 
+%[t,y] = ode45(@(t,y)((ACCF-BCCF*KccF)*(y-[0; 0; pi; 0])),tspan,y0); 
 
-[t,y] = ode45(@(t,y)((ACCF-BCCF*KccF)*(y-[0; 0; pi; 0])),tspan,y0); % LQR sol
+
+[t,y] = ode45(@(t,y)((A-B*K)*(y-[0; 0; pi; 0])),tspan,y0); 
 % Recomend to dock this system to watch it 
 
 figure(3)
