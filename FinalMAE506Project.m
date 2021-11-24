@@ -37,6 +37,10 @@ full_system_com = [1 1 1 1]*((s*eye(size(A))-A)^-1)*B
 simplify(full_system_com)
 det(full_system)
 
+% unstable
+det((s*eye(size(A))-A))
+
+
 solve((s*(- 1000*s^3 - 200*s^2 + 5886*s + 981))==0)
 
 ACCF = [ 0 1 0 0;
@@ -144,28 +148,26 @@ score = (mse'*mse);
 
 figure(1)
 
+
+% TO DO: 
+% MAKE A VIDEO FOR THE PPTX WE NEED
+% 
+ %v = VideoWriter('LQR.avi');
+ %open(v)
+
+
+
 % Recomend to dock this system to watch it 
  for k=1:100:length(t)
      
      drawcartpend_bw(y(k,:),m,M,L);
+     %frame = getframe(gcf);
+     %writeVideo(v,frame);
   
  end
+ %close(v)
  
  
-% TO DO: 
-% MAKE A VIDEO FOR THE PPTX WE NEED
-% 
-% v = VideoWriter('newfile.avi');
-% open(v)
-% for index = 1:length(tspan)
-%     plot(t(index),y(index),'Linewidth',2)
-%     frame = getframe(gcf);
-%     writeVideo(v,frame);
-%     
-%     
-% end 
-% 
-% close(v)
 
 % Clean Plot of the system
 % TO DO:
@@ -181,32 +183,49 @@ hold on;  set(gca,'Fontsize',10); %axis square;
 %title('LQR Soultion')
 subplot(4,1,1);
 plot(tspan, y(:,1), 'r-','LineWidth',2);
-xlabel('t (s)');
-ylabel('x (m)');
+xlabel('$t$ (s)', 'Interpreter','latex')  
+ylabel('$x$ (m)', 'Interpreter','latex');
 % 
-hold on;  set(gca,'Fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
 title('LQR Soultion')
 grid on
  subplot(4,1,2);
 plot(tspan, y(:,2), 'r-','LineWidth',2);
-xlabel('t (s)');
-ylabel('v (m/s)');
+xlabel('$t$ (s)', 'Interpreter','latex')  
+ylabel('$v$ (m/s)', 'Interpreter','latex');
 % 
-hold on;  set(gca,'Fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
 grid on
 subplot(4,1,3);
 plot(tspan, y(:,3), 'b-','LineWidth',2);
-xlabel('t (s)');
-ylabel('\theta (rad)');
+xlabel('$t$ (s)', 'Interpreter','latex')  
+ylabel('$\theta$ (rad)', 'Interpreter','latex');
 % 
-hold on;  set(gca,'Fontsize',10);
+hold on; set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
 grid on
 subplot(4,1,4);
 plot(tspan, y(:,4), 'b-','LineWidth',2);
-xlabel('t (s)');
-ylabel('\omega (rad/s)');
-hold on;  set(gca,'Fontsize',10);
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex')  
+ylabel('\bf{$\omega$ (rad/s)}', 'Interpreter','latex');
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
+set(gcf,'color','white')
 grid on
+
+
+% ylabel('$y$', 'Interpreter','latex')  
+% legend('Closed−Loop')
+% set(gca,'linewidth',2,'fontsize',20,'fontname','Times');
+% set(gcf,'color','white')
+% grid on
+
+S_LQR = stepinfo(y,tspan,[0; 0; pi; 0])
+
+sys_LQR  = ss(A-B*K,B,C,0)
+% needs new fig
+%step(sys_LQR)
+
+stepinfo(sys_LQR)
+
 
 
 %%
@@ -233,8 +252,10 @@ CCCF = [981 981 -300 -300]
  KccF = [67.3728+0 119.243+(981/1000) 90.6527+(5886/1000) 17.6000-(200/1000) ]
  
  
- K = KccF*(ctrb(A,B)*PCCF_INV)^-1
+ %K = KccF*(ctrb(A,B)*PCCF_INV)^-1 % dan Cohen calc of gain for pd
  
+ 
+ K =[-38.6303  -72.5903  698.6406  279.1800]
 %[t,y] = ode45(@(t,y)((ACCF-BCCF*KccF)*(y-[0; 0; pi; 0])),tspan,y0); 
 
 
@@ -242,53 +263,65 @@ CCCF = [981 981 -300 -300]
 % Recomend to dock this system to watch it 
 
 figure(3)
+%v2 = VideoWriter('PD.avi');
+%open(v2)
 % Recomend to dock this system to watch it 
  for k=1:100:length(t)
      drawcartpend_bw(y(k,:),m,M,L);
+     %frame = getframe(gcf);
+     %writeVideo(v2,frame);
      
  end
+ 
+ %close(v2)
 
 figure(4)
-hold on;  set(gca,'Fontsize',10); %axis square;
+hold on;  set(gca,'Fontsize',10,'fontname','Times'); %axis square;
 %xlabel('Time (s)'); ylabel('Output'); 
 
 %plot(tspan,y,'Linewidth',2)
 
 
-% EXAMPLE from my thesis
-%title('LQR Soultion')
+%
+%title('PD')
 subplot(4,1,1);
 plot(tspan, y(:,1), 'r-','LineWidth',2);
-xlabel('t (s)');
-ylabel('x (m)');
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex')  
+ylabel('$x$ (m)','Interpreter','latex');
 % 
-hold on;  set(gca,'Fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
 title('PD Soultion')
 grid on
  subplot(4,1,2);
 plot(tspan, y(:,2), 'r-','LineWidth',2);
-xlabel('t (s)');
-ylabel('v (m/s)');
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex') 
+ylabel('$v$ (m/s)','Interpreter','latex');
 % 
-hold on;  set(gca,'Fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
 grid on
 subplot(4,1,3);
 plot(tspan, y(:,3), 'b-','LineWidth',2);
-xlabel('t (s)');
-ylabel('\theta (rad)');
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex')   
+ylabel('$\theta$ (rad)','Interpreter','latex');
 % 
-hold on;  set(gca,'Fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
 grid on
 subplot(4,1,4);
 plot(tspan, y(:,4), 'b-','LineWidth',2);
-xlabel('t (s)');
-ylabel('\omega (rad/s)');
-hold on;  set(gca,'Fontsize',10);
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex') 
+ylabel('$\omega$ (rad/s)','FontWeight','bold', 'Interpreter','latex','fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
+set(gcf,'color','white')
 grid on
 
 
+S_PD = stepinfo(y,tspan,[0; 0; pi; 0])
 
+S_PD_ss  = ss(A-B*K,B,C,0)
+% need Another plot
+%step(S_PD_ss)
 
+stepinfo(S_PD_ss)
 
 
 
@@ -316,7 +349,7 @@ end
 
 function drawcartpend_bw(y,m,M,L)
 
-% Steve Brunton 
+% Funtion for drawing made by Steve Brunton 
 % Data Driven Machine learning book
 x = y(1);
 th = y(3);
@@ -360,7 +393,9 @@ ylim([-2 2.5]);
 set(gca,'Color','k','XColor','w','YColor','w')
 set(gcf,'Position',[10 900 800 400])
 set(gcf,'Color','k')
-set(gcf,'InvertHardcopy','off')   
+set(gcf,'InvertHardcopy','off')
+xlim('manual')
+ylim('manual')
 
 % box off
 drawnow
