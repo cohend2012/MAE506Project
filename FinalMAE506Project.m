@@ -340,10 +340,30 @@ det(OB)
 
 
 % Simulation of an observer−based compensator
-tspan = [0 tspan]; % time horizon
+%tspan = [0 tspan]; % time horizon
 xAin = y0; % actual state vector at the initial time
-xEin = [0;0]; % estimate of state vector at the initial time
+xEin = y0%[-3.1;0;3.1;0]; % estimate of state vector at the initial time
 xin = [xAin; xEin];
+
+det(s*eye(length(A))-A)
+
+ s^2 +2*zeta_des*wn_des*s+wn_des^2 
+ 
+ s^4+(176/5)*s^3+(727327/2000)*s^2+(123454/125)*s+(168432/125)
+ 
+  
+ s^4+35.2*s^3+363.6635*s^2+987.6320*s+1347.5 
+ 
+ %PCCF_INV found before
+ 
+ LOCF = [1347.5+0;987.6320+(981/1000);363.6635+(5886/1000);35.2-(200/1000)]
+
+L = ((PCCF_INV*OB)^-1)*LOCF
+
+ 
+ KccF = [67.3728+0 119.243+(981/1000) 90.6527+(5886/1000) 17.6000-(200/1000) ]
+
+
 
 [t,y] = ode45(@solveObsBasedComp,tspan,xin); 
 
@@ -352,9 +372,9 @@ xin = [xAin; xEin];
 
 
 
-
+figure(5)
  for k=1:100:length(t)
-     drawcartpend_bw(y(k,:),m,M,L);
+     drawcartpend_bwOBVCTR(y(k,:),m,M,2);
      %frame = getframe(gcf);
      %writeVideo(v2,frame);
      
@@ -363,7 +383,7 @@ xin = [xAin; xEin];
  
  
  
-figure(4)
+figure(6)
 hold on;  set(gca,'Fontsize',10,'fontname','Times'); %axis square;
 %xlabel('Time (s)'); ylabel('Output'); 
 
@@ -371,7 +391,7 @@ hold on;  set(gca,'Fontsize',10,'fontname','Times'); %axis square;
 
 
 %
-%title('PD')
+%title('OBSVCTRL')
 subplot(4,1,1);
 plot(tspan, y(:,1), 'r-','LineWidth',2);
 xlabel('\bf{$t$ (s)}', 'Interpreter','latex')  
@@ -425,17 +445,14 @@ d = 1;
 
 
 % A matrix we cited in our proposal
-A = [0 1 0 0;
-    0 -d/M -m*g/M 0;
-    0 0 0 1;
-    0 -d/(M*L) -(m+M)*g/(M*L) 0];
+A = [0 1 0 0;0 -d/M -m*g/M 0;0 0 0 1;0 -d/(M*L) -(m+M)*g/(M*L) 0];
 
 
 % B matrix we cited in our proposal
 B = [0; 1/M; 0; 1/(M*L)];
 C = [1 1 1 1];
 D=0;
-L = [1; 1; 1 ;1];
+L = [114.0519; -219.4375; 54.8730 ;85.5126];
 K = [-38.6303  -72.5903  698.6406  279.1800];
 r = 0;
 G=1;
@@ -512,3 +529,63 @@ drawnow
 hold off
 
 end
+
+function drawcartpend_bwOBVCTR(y,m,M,L)
+
+% Funtion for drawing made by Steve Brunton 
+% Data Driven Machine learning book
+x = y(1);
+th = y(3);
+
+% kinematics
+% x = 3;        % cart position
+% th = 3*pi/2;   % pendulum angle
+
+% dimensions
+% L = 2;  % pendulum length
+W = 1*sqrt(M/5);  % cart width
+H = .5*sqrt(M/5); % cart height
+wr = .2; % wheel radius
+mr = .3*sqrt(m); % mass radius
+
+% positions
+% y = wr/2; % cart vertical position
+y = wr/2+H/2; % cart vertical position
+w1x = x-.9*W/2;
+w1y = 0;
+w2x = x+.9*W/2-wr;
+w2y = 0;
+
+px = x + L*sin(th);
+py = y - L*cos(th);
+
+plot([-10 10],[0 0],'w','LineWidth',2)
+hold on
+rectangle('Position',[x-W/2,y-H/2,W,H],'Curvature',.1,'FaceColor',[1 0.1 0.1],'EdgeColor',[1 1 1])
+rectangle('Position',[w1x,w1y,wr,wr],'Curvature',1,'FaceColor',[1 1 1],'EdgeColor',[1 1 1])
+rectangle('Position',[w2x,w2y,wr,wr],'Curvature',1,'FaceColor',[1 1 1],'EdgeColor',[1 1 1])
+
+plot([x px],[y py],'w','LineWidth',2)
+
+rectangle('Position',[px-mr/2,py-mr/2,mr,mr],'Curvature',1,'FaceColor',[.3 0.3 1],'EdgeColor',[1 1 1])
+
+% set(gca,'YTick',[])
+% set(gca,'XTick',[])
+xlim([-5 5]);
+ylim([-2 2.5]);
+set(gca,'Color','k','XColor','w','YColor','w')
+set(gcf,'Position',[10 900 800 400])
+set(gcf,'Color','k')
+set(gcf,'InvertHardcopy','off')
+xlim('manual')
+ylim('manual')
+
+% box off
+drawnow
+hold off
+
+end
+
+
+
+
