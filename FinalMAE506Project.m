@@ -20,15 +20,23 @@ B = [0; 1/M; 0; 1/(M*L)];
 open_eigs=eigs(A) % look at the eigs 
 
 % posible Q 
-Q = [1 0 0 0; 
-    0 10 0 0;
-    0 0 100 0;
-    0 0 0 1000];
+% Q = [1 0 0 0; 
+%     0 10 0 0;
+%     0 0 100 0;
+%     0 0 0 1000];
+
+Q = eye(4)
+
+%Q = [100 0 0 0; 
+   % 0 10 0 0;
+   % 0 0 10 0;
+   % 0 0 0 1];
+
 
 %Q = eye(size(A));
 % Posible R
 R = eye(1)*0.1;
-
+%R = eye(1)*1;
 syms s KP1 KD1 KP2 KD2
 K_Vec = [KP1 KD1 KP2 KD2]
 full_system = (s*eye(size(A))-A-B*K_Vec)
@@ -324,6 +332,20 @@ S_PD_ss  = ss(A-B*K,B,C,0)
 stepinfo(S_PD_ss)
 
 
+%% Observer
+
+OB = obsv(A,C)
+
+det(OB)
+
+
+% Simulation of an observer−based compensator
+tspan = [0 tspan]; % time horizon
+xAin = y0; % actual state vector at the initial time
+xEin = [0;0]; % estimate of state vector at the initial time
+xin = [xAin; xEin];
+
+[t,y] = ode45(@solveObsBasedComp,tspan,xin); 
 
 
 
@@ -331,6 +353,94 @@ stepinfo(S_PD_ss)
 
 
 
+ for k=1:100:length(t)
+     drawcartpend_bw(y(k,:),m,M,L);
+     %frame = getframe(gcf);
+     %writeVideo(v2,frame);
+     
+ end
+ 
+ 
+ 
+ 
+figure(4)
+hold on;  set(gca,'Fontsize',10,'fontname','Times'); %axis square;
+%xlabel('Time (s)'); ylabel('Output'); 
+
+%plot(tspan,y,'Linewidth',2)
+
+
+%
+%title('PD')
+subplot(4,1,1);
+plot(tspan, y(:,1), 'r-','LineWidth',2);
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex')  
+ylabel('$x$ (m)','Interpreter','latex');
+% 
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
+title('Observer Based Compensator')
+grid on
+ subplot(4,1,2);
+plot(tspan, y(:,2), 'r-','LineWidth',2);
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex') 
+ylabel('$v$ (m/s)','Interpreter','latex');
+% 
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
+grid on
+subplot(4,1,3);
+plot(tspan, y(:,3), 'b-','LineWidth',2);
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex')   
+ylabel('$\theta$ (rad)','Interpreter','latex');
+% 
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
+grid on
+subplot(4,1,4);
+plot(tspan, y(:,4), 'b-','LineWidth',2);
+xlabel('\bf{$t$ (s)}', 'Interpreter','latex') 
+ylabel('$\omega$ (rad/s)','FontWeight','bold', 'Interpreter','latex','fontsize',10);
+hold on;  set(gca,'Fontsize',10,'fontname','Times','FontWeight','bold');
+set(gcf,'color','white')
+grid on
+
+
+OBS_PD = stepinfo(y,tspan,[0; 0; pi; 0])
+
+S_OBS_ss  = ss(A-B*K,B,C,0)
+% need Another plot
+%step(S_PD_ss)
+
+stepinfo(S_OBS_ss)
+
+
+
+
+
+
+function dx = solveObsBasedComp(t,x)
+m = 1;
+M = 5;
+L = 2;
+g = -9.81;
+d = 1;
+
+
+% A matrix we cited in our proposal
+A = [0 1 0 0;
+    0 -d/M -m*g/M 0;
+    0 0 0 1;
+    0 -d/(M*L) -(m+M)*g/(M*L) 0];
+
+
+% B matrix we cited in our proposal
+B = [0; 1/M; 0; 1/(M*L)];
+C = [1 1 1 1];
+D=0;
+L = [1; 1; 1 ;1];
+K = [-38.6303  -72.5903  698.6406  279.1800];
+r = 0;
+G=1;
+dx = [A -B*K; L*C A-B*K-L*C]*x + [B*G; B*G]*r;
+end
 
 
 
